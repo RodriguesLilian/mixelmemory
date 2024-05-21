@@ -1,4 +1,19 @@
-import pygame, cv2, random, os
+import cv2
+import os
+import pygame
+import random
+
+WHITE = (255, 255, 255)  # Example color, define if not already defined
+WINDOW_WIDTH = 1280  # Define window width if not already defined
+FPS = 30  # Define FPS if not already defined
+
+current_directory = os.path.dirname(__file__)
+
+fonts_directory = os.path.join(current_directory, 'fonts')
+images_directory = os.path.join(current_directory, 'images')
+cats_directory = os.path.join(images_directory, 'cats')
+sounds_directory = os.path.join(current_directory, 'sounds')
+video_directory = os.path.join(current_directory, 'video')
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, filename, x, y):
@@ -7,13 +22,12 @@ class Tile(pygame.sprite.Sprite):
         # Get the image name without extension
         self.name = filename.split('.')[0]
         
-        self.original_image = pygame.image.load('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/cats/' + filename)
-        self.back_image = pygame.image.load('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/cats/' + filename)
-        # Surface, color, rect
-        pygame.draw.rect(self.back_image, WHITE, self.back_image.get_rect())
+        self.original_image = pygame.image.load(os.path.join(cats_directory, filename))
+        self.back_image = pygame.Surface((128, 128))  # Create a surface for back image
+        self.back_image.fill(WHITE)  # Fill back image surface with white color
 
         self.image = self.back_image
-        self.rect = self.image.get_rect(topleft = (x, y))
+        self.rect = self.image.get_rect(topleft=(x, y))
         # Hiding the image
         self.shown = False
 
@@ -35,7 +49,7 @@ class Game():
         # Cats
 
         # List of all cat image files
-        self.all_cats = [f for f in os.listdir('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/cats') if os.path.join('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/cats', f)]
+        self.all_cats = [f for f in os.listdir(cats_directory) if os.path.isfile(os.path.join(cats_directory, f))]
         
         self.img_width, self.img_height = (128, 128)
         # Spacing between card images
@@ -60,22 +74,22 @@ class Game():
         # Video
 
         self.is_video_playing = True
-        self.play = pygame.image.load('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/play.png').convert_alpha()
-        self.stop = pygame.image.load('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/stop.png').convert_alpha()
+        self.play = pygame.image.load(os.path.join(images_directory, 'play.png')).convert_alpha()
+        self.stop = pygame.image.load(os.path.join(images_directory, 'stop.png')).convert_alpha()
         self.video_toggle = self.play
-        self.video_toggle_rect = self.video_toggle.get_rect(topright = (WINDOW_WIDTH - 50, 10))
+        self.video_toggle_rect = self.video_toggle.get_rect(topright=(WINDOW_WIDTH - 50, 10))
         
         self.get_video()
         
         # Music
 
         self.is_music_playing = True
-        self.sound_on = pygame.image.load('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/speaker.png').convert_alpha()
-        self.sound_off = pygame.image.load('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/images/mute.png').convert_alpha()
+        self.sound_on = pygame.image.load(os.path.join(images_directory, 'speaker.png')).convert_alpha()
+        self.sound_off = pygame.image.load(os.path.join(images_directory, 'mute.png')).convert_alpha()
         self.music_toggle = self.sound_on
-        self.music_toggle_rect = self.music_toggle.get_rect(topright = (WINDOW_WIDTH - 10, 10))
+        self.music_toggle_rect = self.music_toggle.get_rect(topright=(WINDOW_WIDTH - 10, 10))
 
-        pygame.mixer.music.load('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/sounds/audio.mp3')
+        pygame.mixer.music.load(os.path.join(sounds_directory, 'audio.mp3'))
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(loops=-1) 
 
@@ -86,6 +100,7 @@ class Game():
         self.user_input(event_list)
         self.draw()
         self.check_level_complete(event_list)
+        #pygame.display.flip()  # Update the display
 
     def check_level_complete(self, event_list):
         if not self.block_game:
@@ -122,16 +137,14 @@ class Game():
         self.cats = self.select_random_cats(self.level)
         self.level_complete = False
         self.rows = self.level + 1
-        self.cols= 4
+        self.cols = 4
         self.generate_tileset(self.cats)
 
     def generate_tileset(self, cats):
         self.cols = self.rows = self.cols if self.cols >= self.rows else self.rows
 
         TILES_WIDTH = (self.img_width * self.cols + self.padding * 3)
-        print('TILES_WIDTH: ', TILES_WIDTH)
         LEFT_MARGIN = RIGHT_MARGIN = (self.width - TILES_WIDTH) / 2
-        print('LEFT_MARGIN: ', LEFT_MARGIN)
         #tiles = []
         self.tiles_group.empty()
 
@@ -176,61 +189,61 @@ class Game():
                     self.generate_level(self.level)
 
     def draw(self):
-        screen.fill(BLACK)
+            screen.fill(BLACK)
 
-        # Fonts
+            # Fonts
+            title_font = pygame.font.Font(os.path.join(fonts_directory, 'Sugar Cream.otf'), 44)
+            content_font = pygame.font.Font(os.path.join(fonts_directory, 'Sugar Cream.otf'), 24)
 
-        title_font = pygame.font.Font('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/fonts/Sugar Cream.otf', 44)
-        content_font = pygame.font.Font('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/fonts/Sugar Cream.otf', 24)
+            # Text
+            title_text = title_font.render('MiXel Memory Game', True, WHITE)
+            title_rect = title_text.get_rect(midtop=(WINDOW_WIDTH/2, 10))
+            level_text = content_font.render('Level ' + str(self.level), True, WHITE)
+            level_rect = level_text.get_rect(midtop=(WINDOW_WIDTH/2, 80))
+            info_text = content_font.render('Find 2 of each', True, WHITE)
+            info_rect = info_text.get_rect(midtop=(WINDOW_WIDTH/2, 120))
 
-        # Text
-
-        title_text = title_font.render('MiXel Memory Game', True, WHITE)
-        title_rect = title_text.get_rect(midtop = (WINDOW_WIDTH/2, 10))
-
-        level_text = content_font.render('Level ' + str(self.level), True, WHITE)
-        level_rect = level_text.get_rect(midtop = (WINDOW_WIDTH/2, 80))
-
-        info_text = content_font.render('Find 2 of each', True, WHITE)
-        info_rect = info_text.get_rect(midtop = (WINDOW_WIDTH/2, 120))
-
-        if self.is_video_playing:
-            if self.success:
-                screen.blit(pygame.image.frombuffer(self.img.tobytes(), self.shape, 'BGR'), (50, 150))
+            if self.is_video_playing:
+                if self.success:
+                    screen.blit(pygame.image.frombuffer(self.img.tobytes(), self.shape, 'BGR'), (50, 150))
+                else:
+                    self.get_video()
             else:
-                self.get_video()
-        else:
-            screen.blit(pygame.image.frombuffer(self.img.tobytes(), self.shape, 'BGR'), (50, 150))
+                screen.blit(pygame.image.frombuffer(self.img.tobytes(), self.shape, 'BGR'), (50, 150))
 
+            if not self.level == 5:
+                next_text = content_font.render('Level complete. Press space for next level.', True, WHITE)
+            else:
+                next_text = content_font.render('Congrats. You won. Press space to play again.', True, WHITE)
+            next_rect = next_text.get_rect(midbottom=(WINDOW_WIDTH/2, WINDOW_HIGHT - 40))
 
-        if not self.level == 5:
-            next_text = content_font.render('Level complete. Press space for next level.', True, WHITE)
-        else:
-            next_text = content_font.render('Congrats. You won. Press space to play again.', True, WHITE)
-        next_rect = next_text.get_rect(midbottom = (WINDOW_WIDTH/2, WINDOW_HIGHT - 40))
+            pygame.draw.rect(screen, WHITE, (WINDOW_WIDTH - 90, 0, 100, 50))
+            screen.blit(self.music_toggle, self.music_toggle_rect)
+            screen.blit(self.video_toggle, self.video_toggle_rect)
 
-        pygame.draw.rect(screen, WHITE, (WINDOW_WIDTH - 90, 0, 100, 50))
-        screen.blit(self.music_toggle, self.music_toggle_rect)
-        screen.blit(self.video_toggle, self.video_toggle_rect)
+            screen.blit(title_text, title_rect)
+            screen.blit(level_text, level_rect)
+            screen.blit(info_text, info_rect)
 
-        screen.blit(title_text, title_rect)
-        screen.blit(level_text, level_rect)
-        screen.blit(info_text, info_rect)
-        
-        # Draw tileset
+            # Draw tileset
+            self.tiles_group.draw(screen)
+            self.tiles_group.update()
 
-        self.tiles_group.draw(screen)
-        self.tiles_group.update()
-        
-        if self.level_complete:
-            screen.blit(next_text, next_rect)
+            if self.level_complete:
+                screen.blit(next_text, next_rect)
 
     def get_video(self):
-        self.cap = cv2.VideoCapture('C:/Users/alwau/OneDrive/Área de Trabalho/Folder/Games/mixelMemory/video/video.mp4')
+        video_path = os.path.join(video_directory, 'video.mp4')
+        self.cap = cv2.VideoCapture(video_path)
         self.success, self.img = self.cap.read()
         self.shape = self.img.shape[1::-1]
 
 pygame.init()
+
+WINDOW_WIDTH = 1200
+WINDOW_HIGHT = 860
+screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HIGHT))
+pygame.display.set_caption("MiXel Memory Game")
 
 WINDOW_WIDTH = 1200
 WINDOW_HIGHT = 860
