@@ -1,2 +1,5 @@
+pip install asyncio
+pip install numpy
 pip install opencv-python
-pip install pygame # type: ignore
+pip install pygame
+pip install random
